@@ -2,7 +2,10 @@
 $startTime = microtime(true);
 require_once dirname(__FILE__) . '/common/Common.php';
 
-
+/**
+ * 使用 checkSignature 函数验证请求是否合法，在不合法的情况下，记录下恶意来源 IP。
+ * @return boolean
+ */
 function checkSignature()
 {
 	$signature = $_GET["signature"];
@@ -21,7 +24,8 @@ function checkSignature()
 		return false;
 	}
 }
-/*
+
+// 使用 checkSignature 函数验证请求是否合法，在不合法的情况下，记录下恶意来源 IP。
 if(checkSignature()) {
 	if($_GET["echostr"]) {
 		echo $_GET["echostr"];
@@ -34,7 +38,7 @@ if(checkSignature()) {
 	exit(0);
 	
 }
-*/
+
 
 function getWeChatObj($toUserName) {
 	if($toUserName == USERNAME_FINDFACE) {
@@ -56,8 +60,8 @@ function getWeChatObj($toUserName) {
 	require_once dirname(__FILE__) . '/class/WeChatCallBack.php';
 	return  new WeChatCallBack();
 }
+
 function exitErrorInput(){
-	
 	echo 'error input!';
 	interface_log(INFO, EC_OK, "***** interface request end *****");
 	interface_log(INFO, EC_OK, "*********************************");
@@ -78,12 +82,13 @@ if (empty ( $postStr )) {
 	exitErrorInput();
 }
 // 获取参数
+// 获取 POST 数据，解析 XML 数据
 $postObj = simplexml_load_string ( $postStr, 'SimpleXMLElement', LIBXML_NOCDATA );
 if(NULL == $postObj) {
 	interface_log(ERROR, 0, "can not decode xml");	
 	exit(0);
 }
-
+// 根据 ToUserName 来决定是发往哪一个公众账号的消息，然后加载对应的文件，获得对应的对象（ getWeChatObj 函数）。
 $toUserName = ( string ) trim ( $postObj->ToUserName );
 if (! $toUserName) {
 	interface_log ( ERROR, EC_OK, "error input!" );
@@ -91,11 +96,13 @@ if (! $toUserName) {
 } else {
 	$wechatObj = getWeChatObj ( $toUserName );
 }
+// 调用对象的 init 函数初始化对象。 ❑ 调用对象的 process 函数处理公众账号逻辑
 $ret = $wechatObj->init ( $postObj );
 if (! $ret) {
 	interface_log ( ERROR, EC_OK, "error input!" );
 	exitErrorInput();
 }
+// 调用对象的 process 函数处理公众账号逻辑，得到返回消息字符串。
 $retStr = $wechatObj->process ();
 interface_log ( INFO, EC_OK, "response:" . $retStr );
 echo $retStr;

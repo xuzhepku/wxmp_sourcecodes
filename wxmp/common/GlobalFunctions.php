@@ -55,6 +55,7 @@ function checkParam($rules = array(), &$args) {
 	return ParamChecker::getInstance()->checkParam($rules, $args);
 }
 
+// 定义日志界别
 define("DEBUG", "DEBUG");
 define("INFO", "INFO");
 define("ERROR", "ERROR");
@@ -112,6 +113,7 @@ function ccdb_log($confName ,$logLevel, $errorCode, $logMessage = "no error msg"
 	//为了缩短日志的输出，file只取最后一截文件名
 	$file = explode("/", rtrim($file, '/'));
 	$file = $file[count($file)-1];
+	// 	组装日志头部
 	$prefix = "[$file][$function][$line][$logLevel][$errorCode] ";
 	if($logLevel == INFO || $logLevel == STAT) {
 		$prefix = "[$logLevel]" ;
@@ -129,6 +131,7 @@ function ccdb_log($confName ,$logLevel, $errorCode, $logMessage = "no error msg"
 /**
  * @author pacozhong
  * 接口层日志函数
+ * 实际用到的日志函数
  */
 function interface_log($logLevel, $errorCode, $logMessage = "no error msg")
 {
@@ -146,6 +149,18 @@ function matcher_log($logLevel, $errorCode, $logMessage = "no error msg")
 
 function getIp()
 {
+// 	1） 没有使用代理服务器的情况：
+// 	❑ REMOTE_ ADDR= 您的 IP。 
+// 	❑ HTTP_ VIA= 没数值或不显示。 
+// 	❑ HTTP_ X_ FORWARDED_ FOR= 没数值或不显示。 
+// 	2） 使用透明代理服务器的情况： Transparent   Proxies。 
+// 	❑ REMOTE_ ADDR= 最后一个代理服务器 IP。 
+// 	❑ HTTP_ VIA= 代理服务器 IP。 
+// 	❑ HTTP_ X_ FORWARDED_ FOR= 您的真实 IP， 经过多个代理服务器时，这个值类似于 203. 98. 182. 163， 203. 98. 182. 163， 203. 129. 72. 215。 这类代理服务器还是将您的信息转发给您的访问对象，无法达到隐藏真实身份的目的。 
+// 	3） 使用普通匿名代理服务器的情况： Anonymous   Proxies。 
+// 	❑ REMOTE_ ADDR= 最后一个代理服务器 IP。 
+// 	❑ HTTP_ VIA= 代理服务器 IP。 
+// 	❑ HTTP_ X_ FORWARDED_ FOR= 代理服务器 IP， 经过多个代理服务器时，这个值类似于 203. 98. 182. 163， 203. 98. 182. 163， 203. 129. 72. 215。 隐藏了您的真实 IP， 但是向访问对象透露了您是使用代理服务器访问它们的。
 	if (isset($_SERVER)){
 		if (isset($_SERVER["HTTP_X_FORWARDED_FOR"])){
 			$realip = $_SERVER["HTTP_X_FORWARDED_FOR"];
